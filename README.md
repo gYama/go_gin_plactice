@@ -1,5 +1,5 @@
 
-# Golang / gin の学習用
+# Golang / Gin / Docker / Docker-Compose の学習用
 ## はじめに
 そのまま起動しても、Dockerで起動しても使えるようにしてます。
 
