@@ -2,21 +2,24 @@
 ## go / gin の学習用
 #### はじめに
 そのまま起動しても、Dockerで起動しても使えるようにしてます。
-内容は徐々にブラッシュアアップ予定
+内容は徐々にブラッシュアアップ予定。
 
 #### 機能
  - ログイン認証
 Cognitoを利用。
 Cognitoで事前に作成したユーザーを使ってログインする。
+※まだセッション管理はできていない
  - データ登録/編集/削除
 簡単なデータを扱う（そのうち拡張予定）
 
 #### 今後の予定（優先度順）
+ - セッション管理
  - 検索機能の実装
  - 入力値のバリデーション
  - DBをMySQLに変更（別コンテナとして起動させる予定）
- - セッション管理
  - ログアウト機能の実装
+ - デザインを整える
+これをそのまま研修の課題にしてもよさそう。
 
 #### 事前準備
 ##### Dockerをインストール
@@ -31,10 +34,9 @@ https://www.docker.com/get-started/
 ##### Golangの環境が無い場合は、以下を参考にGolangをインストール
 https://go.dev/doc/install
 
-brewなどでインストールしたい場合は、ググってください。
-
-環境変数（GOPATHとかGOROOT）の設定も必要になるかも。
-→ 最初どうだったか忘れた
+brewなどでインストールしたい場合は、各自で調査してください。
+環境変数（GOPATHとかGOROOT）の設定も必要。
+→ 各環境に合わせて設定してください。
 
 ##### 最初からやるために、以下を実行
 ```
@@ -54,7 +56,7 @@ go get github.com/mattn/go-sqlite3
 ```
 
 #### 環境変数の設定（ローカル）
-AWSのリージョン（ap-northease-1など）、CognitoのユーザープールID（ap-northeast-1_xxxxxxxなど）、CognitoのアプリクライアントIDを設定
+AWSのリージョン（ap-northeast-1など）、CognitoのユーザープールID（ap-northeast-1_xxxxxxxなど）、CognitoのアプリクライアントIDを設定
 ```
 export AWS_REGION=xxxxxxxxxxxxxxx
 export COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
