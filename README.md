@@ -64,7 +64,7 @@ go get github.com/jinzhu/gorm
 go get github.com/mattn/go-sqlite3
 ```
 
-### 環境変数の設定（ローカル）
+#### 環境変数の設定（ローカル）
 AWSのリージョン（ap-northeast-1など）、CognitoのユーザープールID（ap-northeast-1_xxxxxxxなど）、CognitoのアプリクライアントIDを設定
 ```
 export AWS_REGION=xxxxxxxxxxxxxxx
@@ -72,7 +72,7 @@ export COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
 export COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
 ```
 
-### envファイルの用意（docker-compose.ymlで読み込む用）
+#### envファイルの用意（docker-compose.ymlで読み込む用）
 docker-compose.ymlと同じ階層に「variables.env」を作成し、以下を設定
 ```
 AWS_REGION=xxxxxxxxxxxxxxx
