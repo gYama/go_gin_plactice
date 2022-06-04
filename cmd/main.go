@@ -16,24 +16,9 @@ import (
 	cognitosrp "github.com/alexrudd/cognito-srp/v4"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 
 	_ "github.com/mattn/go-sqlite3"
 )
-
-type Todo struct {
-	gorm.Model
-	Text   string
-	Status string
-}
-
-type User struct {
-	gorm.Model
-	id       string
-	password string
-}
-
-var user User
 
 func main() {
 	router := gin.Default()
@@ -48,9 +33,9 @@ func main() {
 	})
 
 	router.GET("/add", func(ctx *gin.Context) {
-		todos := database.GetAll()
+		products := database.GetAll()
 		ctx.HTML(200, "index.html", gin.H{
-			"todos": todos,
+			"products": products,
 		})
 	})
 
@@ -68,9 +53,10 @@ func main() {
 
 	//Create
 	router.POST("/new", func(ctx *gin.Context) {
-		text := ctx.PostForm("text")
-		status := ctx.PostForm("status")
-		database.Insert(text, status)
+		title := ctx.PostForm("title")
+		url := ctx.PostForm("url")
+		memo := ctx.PostForm("memo")
+		database.Insert(title, url, memo)
 		ctx.Redirect(302, "/add")
 	})
 
@@ -81,8 +67,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		todo := database.GetOne(id)
-		ctx.HTML(200, "detail.html", gin.H{"todo": todo})
+		product := database.GetOne(id)
+		ctx.HTML(200, "detail.html", gin.H{"product": product})
 	})
 
 	//Update
@@ -92,9 +78,10 @@ func main() {
 		if err != nil {
 			panic("ERROR")
 		}
-		text := ctx.PostForm("text")
-		status := ctx.PostForm("status")
-		database.Update(id, text, status)
+		title := ctx.PostForm("title")
+		url := ctx.PostForm("url")
+		memo := ctx.PostForm("memo")
+		database.Update(id, title, url, memo)
 		ctx.Redirect(302, "/add")
 	})
 
@@ -105,8 +92,8 @@ func main() {
 		if err != nil {
 			panic("ERROR")
 		}
-		todo := database.GetOne(id)
-		ctx.HTML(200, "delete.html", gin.H{"todo": todo})
+		product := database.GetOne(id)
+		ctx.HTML(200, "delete.html", gin.H{"product": product})
 	})
 
 	//Delete

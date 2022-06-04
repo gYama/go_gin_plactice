@@ -5,78 +5,81 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Todo struct {
+type ProductData struct {
 	gorm.Model
-	Text   string
-	Status string
+	Title string
+	Url   string
+	Memo  string
 }
 
-//DB初期化
+// 初期化
 func Init() {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！（dbInit）")
+		panic("db open error（Init）")
 	}
-	db.AutoMigrate(&Todo{})
+	db.AutoMigrate(&ProductData{})
 	defer db.Close()
 }
 
-//DB追加
-func Insert(text string, status string) {
+// 追加
+func Insert(title string, url string, memo string) {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！（dbInsert)")
+		panic("db open error（Insert)")
 	}
-	db.Create(&Todo{Text: text, Status: status})
+	db.Create(&ProductData{Title: title, Url: url, Memo: memo})
 	defer db.Close()
 }
 
-//DB更新
-func Update(id int, text string, status string) {
+// 更新
+func Update(id int, title string, url string, memo string) {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！（dbUpdate)")
+		panic("db open error（Update)")
 	}
-	var todo Todo
-	db.First(&todo, id)
-	todo.Text = text
-	todo.Status = status
-	db.Save(&todo)
+	var product ProductData
+	db.First(&product, id)
+	product.Title = title
+	product.Url = url
+	product.Memo = memo
+	db.Save(&product)
 	db.Close()
 }
 
-//DB削除
+// 削除
 func Delete(id int) {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！（dbDelete)")
+		panic("db open error（Delete)")
 	}
-	var todo Todo
-	db.First(&todo, id)
-	db.Delete(&todo)
+	var product ProductData
+	db.First(&product, id)
+	db.Delete(&product)
 	db.Close()
 }
 
-//DB全取得
-func GetAll() []Todo {
+// 全件取得
+func GetAll() []ProductData {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！(dbGetAll())")
+		panic("db open error(GetAll())")
 	}
-	var todos []Todo
-	db.Order("created_at desc").Find(&todos)
+
+	var product []ProductData
+	db.Order("created_at desc").Find(&product)
 	db.Close()
-	return todos
+	return product
 }
 
-//DB一つ取得
-func GetOne(id int) Todo {
+// 1件取得
+func GetOne(id int) ProductData {
 	db, err := gorm.Open("sqlite3", "test.sqlite3")
 	if err != nil {
-		panic("データベース開けず！(dbGetOne())")
+		panic("db open error(GetOne())")
 	}
-	var todo Todo
-	db.First(&todo, id)
+	var product ProductData
+	db.First(&product, id)
 	db.Close()
-	return todo
+	return product
 }
