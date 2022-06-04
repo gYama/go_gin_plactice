@@ -24,7 +24,7 @@ Cognitoで事前に作成したユーザーを使ってログインする。
  - 「認証フローの設定」で「ALLOW_USER_PASSWORD_AUTH」にチェックを入れる
  - Cognitoユーザープールでユーザーを作成（IDとPASSWORDを設定）
 
-##### Golangの環境が無い人は、以下を参考にGolangをインストール
+##### Golangの環境が無い場合は、以下を参考にGolangをインストール
 https://go.dev/doc/install
 
 brewなどでインストールしたい場合は、ググってください。
