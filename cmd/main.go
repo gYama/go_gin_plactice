@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"go_gin_plactice/database"
+	"go_gin_practice/database"
 	"os"
 	"strconv"
 	"time"

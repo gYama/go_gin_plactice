@@ -1,4 +1,4 @@
-module go_gin_plactice
+module go_gin_practice
 
 go 1.17
 

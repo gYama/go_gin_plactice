@@ -38,7 +38,7 @@ rm -f go.mod go.sum
 
 ##### 必要なパッケージのダウンロード
 ```
-go mod init go_gin_plactice
+go mod init go_gin_practice
 go get github.com/aws/aws-sdk-go-v2/config
 go get github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider
 go get github.com/aws/aws-sdk-go/aws
