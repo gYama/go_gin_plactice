@@ -61,13 +61,14 @@ export COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
 export COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
 ```
 
-#### 環境変数の設定（docker-compose.yml）
+#### envファイルの用意（docker-compose.ymlで読み込む用）
+docker-compose.ymlと同じ階層に「variables.env」を作成し、以下を設定
 ```
-    environment:
-      - AWS_REGION=xxxxxxxxxxxxxxx
-      - COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
-      - COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
+AWS_REGION=xxxxxxxxxxxxxxx
+COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
+COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
 ```
+※秘匿情報なので、「variables.env」は .gitignore に登録して、プッシュされないようにしておく
 
 #### 起動方法
 ```
