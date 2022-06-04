@@ -44,9 +44,7 @@ func main() {
 
 	//Index
 	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(200, "login.html", gin.H{
-			"user": user,
-		})
+		ctx.HTML(200, "login.html", gin.H{})
 	})
 
 	router.GET("/add", func(ctx *gin.Context) {
