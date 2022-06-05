@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go_gin_practice/database"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -15,102 +16,132 @@ import (
 
 	cognitosrp "github.com/alexrudd/cognito-srp/v4"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
 
+	store := cookie.NewStore([]byte("secret"))
+	// store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+
+	router.Use(sessions.Sessions("mysession", store))
+
 	router.LoadHTMLGlob("templates/*.html")
 
 	database.Init()
 
-	//Index
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(200, "login.html", gin.H{})
-	})
+	// 認証済みユーザー用のグループを作成
+	authUserGroup := router.Group("/")
 
-	router.GET("/add", func(ctx *gin.Context) {
-		products := database.GetAll()
-		ctx.HTML(200, "index.html", gin.H{
-			"products": products,
+	// ここの処理は、全て認証チェックが行われる
+	// 認証チェックでエラーの場合は、ログイン画面が表示される
+	authUserGroup.Use(sessionCheckMiddleware())
+	{
+		authUserGroup.GET("/", func(ctx *gin.Context) {
+			ctx.HTML(200, "dashboard.html", gin.H{})
 		})
-	})
 
+		authUserGroup.GET("/list", func(ctx *gin.Context) {
+			fmt.Println("### list ###")
+			products := database.GetAll()
+			ctx.HTML(200, "index.html", gin.H{
+				"products": products,
+			})
+		})
+
+		// Create
+		authUserGroup.POST("/new", func(ctx *gin.Context) {
+			title := ctx.PostForm("title")
+			url := ctx.PostForm("url")
+			memo := ctx.PostForm("memo")
+			database.Insert(title, url, memo)
+			ctx.Redirect(302, "/list")
+		})
+
+		// Detail
+		authUserGroup.GET("/detail/:id", func(ctx *gin.Context) {
+			n := ctx.Param("id")
+			id, err := strconv.Atoi(n)
+			if err != nil {
+				panic(err)
+			}
+			product := database.GetOne(id)
+			ctx.HTML(200, "detail.html", gin.H{"product": product})
+		})
+
+		// Update
+		authUserGroup.POST("/update/:id", func(ctx *gin.Context) {
+			n := ctx.Param("id")
+			id, err := strconv.Atoi(n)
+			if err != nil {
+				panic("ERROR")
+			}
+			title := ctx.PostForm("title")
+			url := ctx.PostForm("url")
+			memo := ctx.PostForm("memo")
+			database.Update(id, title, url, memo)
+			ctx.Redirect(302, "/list")
+		})
+
+		// 削除確認
+		authUserGroup.GET("/delete_check/:id", func(ctx *gin.Context) {
+			n := ctx.Param("id")
+			id, err := strconv.Atoi(n)
+			if err != nil {
+				panic("ERROR")
+			}
+			product := database.GetOne(id)
+			ctx.HTML(200, "delete.html", gin.H{"product": product})
+		})
+
+		// Delete
+		authUserGroup.POST("/delete/:id", func(ctx *gin.Context) {
+			n := ctx.Param("id")
+			id, err := strconv.Atoi(n)
+			if err != nil {
+				panic("ERROR")
+			}
+			database.Delete(id)
+			ctx.Redirect(302, "/list")
+		})
+	}
+
+	// Login
 	router.POST("/login", func(ctx *gin.Context) {
 		id := ctx.PostForm("id")
 		password := ctx.PostForm("password")
 
-		err := login(id, password)
+		err := login(id, password, ctx)
 		if err != nil {
 			fmt.Println(err)
 			ctx.HTML(200, "login.html", gin.H{"message": "ログイン失敗"})
 		}
-		ctx.Redirect(302, "/add")
+		session := sessions.Default(ctx)
+		session.Set("isAuthenticated", true)
+		session.Save()
+
+		ctx.Redirect(302, "/")
 	})
 
-	//Create
-	router.POST("/new", func(ctx *gin.Context) {
-		title := ctx.PostForm("title")
-		url := ctx.PostForm("url")
-		memo := ctx.PostForm("memo")
-		database.Insert(title, url, memo)
-		ctx.Redirect(302, "/add")
+	// Login
+	router.GET("/login", func(ctx *gin.Context) {
+		ctx.HTML(200, "login.html", gin.H{})
 	})
 
-	//Detail
-	router.GET("/detail/:id", func(ctx *gin.Context) {
-		n := ctx.Param("id")
-		id, err := strconv.Atoi(n)
-		if err != nil {
-			panic(err)
-		}
-		product := database.GetOne(id)
-		ctx.HTML(200, "detail.html", gin.H{"product": product})
-	})
-
-	//Update
-	router.POST("/update/:id", func(ctx *gin.Context) {
-		n := ctx.Param("id")
-		id, err := strconv.Atoi(n)
-		if err != nil {
-			panic("ERROR")
-		}
-		title := ctx.PostForm("title")
-		url := ctx.PostForm("url")
-		memo := ctx.PostForm("memo")
-		database.Update(id, title, url, memo)
-		ctx.Redirect(302, "/add")
-	})
-
-	//削除確認
-	router.GET("/delete_check/:id", func(ctx *gin.Context) {
-		n := ctx.Param("id")
-		id, err := strconv.Atoi(n)
-		if err != nil {
-			panic("ERROR")
-		}
-		product := database.GetOne(id)
-		ctx.HTML(200, "delete.html", gin.H{"product": product})
-	})
-
-	//Delete
-	router.POST("/delete/:id", func(ctx *gin.Context) {
-		n := ctx.Param("id")
-		id, err := strconv.Atoi(n)
-		if err != nil {
-			panic("ERROR")
-		}
-		database.Delete(id)
-		ctx.Redirect(302, "/add")
-
+	// Logout
+	router.GET("/logout", func(ctx *gin.Context) {
+		logout(ctx)
+		ctx.Redirect(302, "/login")
 	})
 
 	router.Run()
 }
 
-// どこかでセッション管理しないといけないけど、とりあえず認証だけ通す
-func login(id string, password string) error {
+// Login（POST）
+func login(id string, password string, ctx *gin.Context) error {
 
 	// cognitosrpはあまりメンテナンスされてなさそう
 	// いずれ自分で実装するが、一旦このまま利用する
@@ -157,4 +188,27 @@ func login(id string, password string) error {
 
 	return nil
 
+}
+
+// Logout
+func logout(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	session.Clear()
+	session.Save()
+}
+
+// 認証チェック　エラーの場合は、ログイン画面を表示する
+func sessionCheckMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+		isAuthenticated := session.Get("isAuthenticated")
+
+		if isAuthenticated == nil {
+			ctx.Abort()
+			ctx.Redirect(http.StatusMovedPermanently, "/login")
+		} else {
+			ctx.Set("isAuthenticated", isAuthenticated)
+			ctx.Next()
+		}
+	}
 }
