@@ -67,6 +67,7 @@ go get github.com/alexrudd/cognito-srp/v4
 go get github.com/gin-gonic/gin
 go get github.com/jinzhu/gorm
 go get github.com/mattn/go-sqlite3
+go get github.com/gin-contrib/sessions
 ```
 
 #### 環境変数の設定（ローカル）
