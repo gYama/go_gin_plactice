@@ -114,8 +114,15 @@ func main() {
 // どこかでセッション管理しないといけないけど、とりあえず認証だけ通す
 func login(id string, password string) error {
 
-	// cognitosrpはあまりメンテナンスされてなさそうなので、自分で処理を書いた方がいいかも
-	csrp, _ := cognitosrp.NewCognitoSRP(id, password, os.Getenv("COGNITO_USERPOOL_ID"), os.Getenv("COGNITO_APP_CLIENT_ID"), nil)
+	// cognitosrpはあまりメンテナンスされてなさそう
+	// いずれ自分で実装するが、一旦このまま利用する
+	csrp, _ := cognitosrp.NewCognitoSRP(
+		id,
+		password,
+		os.Getenv("COGNITO_USERPOOL_ID"),
+		os.Getenv("COGNITO_APP_CLIENT_ID"),
+		aws.String(os.Getenv("COGNITO_APP_CLIENT_SECRET")),
+	)
 
 	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion(os.Getenv("AWS_REGION")))
 	svc := cip.NewFromConfig(cfg)

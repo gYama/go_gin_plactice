@@ -40,8 +40,8 @@ https://www.docker.com/get-started/
 
 #### AWS関連
  - アカウントの作成
- - Cognitoでユーザープールのアプリクライアントを作成（シークレットなし）
- - 「認証フローの設定」で「ALLOW_USER_PASSWORD_AUTH」にチェックを入れる
+ - Cognitoでユーザープールのアプリクライアントを作成（シークレットあり）
+ - 「認証フローの設定」で「ALLOW_USER_SRP_AUTH」にチェックを入れる
  - Cognitoユーザープールでユーザーを作成（IDとPASSWORDを設定）
 
 #### Golangの環境が無い場合は、以下を参考にGolangをインストール
@@ -76,6 +76,7 @@ AWSのリージョン（ap-northeast-1など）、Cognitoのユーザープー�
 export AWS_REGION=xxxxxxxxxxxxxxx
 export COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
 export COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
+export COGNITO_APP_CLIENT_SECRET=xxxxxxxxxxxxxxx
 ```
 
 #### envファイルの用意（docker-compose.ymlで読み込む用）
@@ -84,6 +85,7 @@ docker-compose.ymlと同じ階層に「variables.env」を作成し、以下を�
 AWS_REGION=xxxxxxxxxxxxxxx
 COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
 COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
+COGNITO_APP_CLIENT_SECRET=xxxxxxxxxxxxxxx
 ```
 ※秘匿情報なので、「variables.env」は .gitignore に登録して、プッシュされないようにしておく
 
