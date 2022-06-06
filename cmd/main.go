@@ -45,7 +45,6 @@ func main() {
 		})
 
 		authUserGroup.GET("/list", func(ctx *gin.Context) {
-			fmt.Println("### list ###")
 			products := database.GetAll()
 			ctx.HTML(200, "index.html", gin.H{
 				"products": products,
