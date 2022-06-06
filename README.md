@@ -71,12 +71,27 @@ go get github.com/gin-contrib/sessions
 ```
 
 #### 環境変数の設定（ローカル）
-AWSのリージョン（ap-northeast-1など）、CognitoのユーザープールID（ap-northeast-1_xxxxxxxなど）、CognitoのアプリクライアントIDを設定
+.zprofileを開く（※環境によってファイルが異なります）
 ```
+vi ~/.zprofile
+```
+以下を追記
+```
+# AWSのリージョン（ap-northeast-1など）
 export AWS_REGION=xxxxxxxxxxxxxxx
+
+# CognitoのユーザープールID（ap-northeast-1_xxxxxxxなど）
 export COGNITO_USERPOOL_ID=xxxxxxxxxxxxxxx
+
+# CognitoのアプリクライアントID
 export COGNITO_APP_CLIENT_ID=xxxxxxxxxxxxxxx
+
+# Cognitoのアプリクライアントシークレット
 export COGNITO_APP_CLIENT_SECRET=xxxxxxxxxxxxxxx
+```
+最後に設定を反映（※環境によってファイルが異なります）
+```
+source ~/.zprofile
 ```
 
 #### envファイルの用意（docker-compose.ymlで読み込む用）
