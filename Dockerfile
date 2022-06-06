@@ -6,17 +6,17 @@
 # RUN go mod download
 # COPY ./ ./
 
-# RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o /workspace/go_gin_plactice ./cmd/main.go
+# RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" -o /workspace/go_gin_practice ./cmd/main.go
 
 # FROM alpine as final
 
 # WORKDIR /
 
-# COPY --from=build /workspace/go_gin_plactice /
+# COPY --from=build /workspace/go_gin_practice /
 
 # EXPOSE 8080
 
-# ENTRYPOINT [ "./go_gin_plactice" ]
+# ENTRYPOINT [ "./go_gin_practice" ]
 
 # RUN apk --no-cache add tzdata && cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 

@@ -1,6 +1,8 @@
 package database
 
 import (
+	"strings"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -80,6 +82,24 @@ func GetOne(id int) ProductData {
 	}
 	var product ProductData
 	db.First(&product, id)
+	db.Close()
+	return product
+}
+
+func Search(title string, url string, memo string) []ProductData {
+	db, err := gorm.Open("sqlite3", "test.sqlite3")
+	if err != nil {
+		panic("db open error(GetAll())")
+	}
+
+	// 複数入力された場合は、スペース区切りで分割
+	titles := strings.Split(title, "%s")
+	for i := 0; i < len(titles); i++ {
+		db.Where("title like '%?%", titles[i])
+	}
+
+	var product []ProductData
+	db.Order("created_at desc").Find(&product)
 	db.Close()
 	return product
 }
