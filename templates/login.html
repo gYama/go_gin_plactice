@@ -1,10 +1,25 @@
-<body>
+{{template "header" .}}
 <h2>ログイン</h2>
 <p>{{.message}}</p>
-<form method="post" action="/login">
-    <p>ID</p><input type="text" name="id" size="30" placeholder="入力してください" ></p>
-    <p>PASSWORD<input type="text" name="password" size="30" placeholder="入力してください" ></p>
-    <p><input type="submit" value="ログイン"></p>
-</form>
+<form>
+    <div class="container">
+        <div class="mb-3 row">
+            <label for="inputId" class="col-sm-2 col-form-label">ID</label>
+            <div class="col-sm-5">
+              <input name="id" type="text" class="form-control" id="inputId">
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="inputPassword" class="col-sm-2 col-form-label">PASSWORD</label>
+            <div class="col-sm-5">
+              <input name="password" type="password" class="form-control" id="inputPassword">
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <input class="btn btn-primary col-3" type="submit" value="ログイン">
+        </div>
+    </div>
 
-</body>
+  </form>
+</div>
+{{template "footer"}}

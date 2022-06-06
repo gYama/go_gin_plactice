@@ -1,4 +1,4 @@
-<body>
+{{template "header" .}}
 <h2>商品情報の登録</h2>
 <form method="post" action="/new">
     <p>タイトル<input type="text" name="title" size="30" placeholder="入力してください" ></p>
@@ -15,4 +15,4 @@
         </li>
     {{end}}
 </ul>
-</body>
+{{template "footer"}}
