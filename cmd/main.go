@@ -250,7 +250,6 @@ func login(id string, password string, ctx *gin.Context) error {
 // Logout
 func logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
-	session.Delete("isAuthenticated")
 	session.Clear()
 	session.Save()
 }
