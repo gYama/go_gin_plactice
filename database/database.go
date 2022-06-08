@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -66,8 +67,23 @@ func GetAll() []ProductData {
 	}
 
 	var product []ProductData
-	db.Order("created_at desc").Find(&product)
+	db.Debug().Order("created_at desc").Find(&product)
 	return product
+}
+
+// レコード数取得
+func GetRecordCount() int64 {
+	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
+	if err != nil {
+		panic("db open error(GetRecordCount())")
+	}
+
+	var count int64
+	var product []ProductData
+
+	db.Find(&product).Count(&count)
+	fmt.Println(count)
+	return count
 }
 
 // 1件取得
@@ -81,7 +97,7 @@ func GetOne(id int) ProductData {
 	return product
 }
 
-func Search(title string, url string, memo string) []ProductData {
+func Search(title string, url string, memo string, andor string) []ProductData {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error(GetAll())")
@@ -95,7 +111,7 @@ func Search(title string, url string, memo string) []ProductData {
 	// 複数入力された場合は、スペース（半角/全角）区切りで分割
 	reg := "[ 　]"
 
-	// titleの検索
+	// titleの検索クエリー
 	titles := regexp.MustCompile(reg).Split(title, -1)
 
 	for i := 0; i < len(titles); i++ {
@@ -110,7 +126,7 @@ func Search(title string, url string, memo string) []ProductData {
 		}
 	}
 
-	// urlの検索
+	// urlの検索クエリー
 	urls := regexp.MustCompile(reg).Split(url, -1)
 
 	for i := 0; i < len(urls); i++ {
@@ -125,7 +141,7 @@ func Search(title string, url string, memo string) []ProductData {
 		}
 	}
 
-	// memoの検索
+	// memoの検索クエリー
 	memos := regexp.MustCompile(reg).Split(memo, -1)
 
 	for i := 0; i < len(memos); i++ {
@@ -141,14 +157,26 @@ func Search(title string, url string, memo string) []ProductData {
 	}
 
 	var products []ProductData
-	// クエリーを出力する場合は、db.Debug()を使う
-	db.Where(
-		titleQuery,
-	).Or(
-		urlQuery,
-	).Or(
-		memoQuery,
-	).Find(&products)
+
+	// 項目間のAND/OR
+	if andor == "or" {
+		// クエリーを出力する場合は、db.Debug()を使う
+		db.Where(
+			titleQuery,
+		).Or(
+			urlQuery,
+		).Or(
+			memoQuery,
+		).Find(&products)
+	} else {
+		db.Where(
+			titleQuery,
+		).Where(
+			urlQuery,
+		).Where(
+			memoQuery,
+		).Find(&products)
+	}
 
 	return products
 }
