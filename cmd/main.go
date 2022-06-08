@@ -99,7 +99,7 @@ func main() {
 				memo = session.Get("memo").(string)
 			}
 			if session.Get("andor") != nil {
-				memo = session.Get("andor").(string)
+				andor = session.Get("andor").(string)
 			}
 
 			// 再検索して表示する
