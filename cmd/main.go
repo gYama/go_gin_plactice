@@ -41,12 +41,15 @@ func main() {
 	authUserGroup.Use(sessionCheckMiddleware())
 	{
 		authUserGroup.GET("/", func(ctx *gin.Context) {
-			ctx.HTML(200, "dashboard.html", gin.H{})
+			count := database.GetRecordCount()
+			ctx.HTML(200, "dashboard.html", gin.H{
+				"count": count,
+			})
 		})
 
-		authUserGroup.GET("/list", func(ctx *gin.Context) {
+		authUserGroup.GET("/regist", func(ctx *gin.Context) {
 			products := database.GetAll()
-			ctx.HTML(200, "index.html", gin.H{
+			ctx.HTML(200, "regist.html", gin.H{
 				"products": products,
 			})
 		})
@@ -55,7 +58,8 @@ func main() {
 			title := ctx.PostForm("title")
 			url := ctx.PostForm("url")
 			memo := ctx.PostForm("memo")
-			products := database.Search(title, url, memo)
+			andor := ctx.PostForm("andor")
+			products := database.Search(title, url, memo, andor)
 
 			// 検索条件をセッションに保存
 			// ちょっとベタだけど、とりあえず版
@@ -63,6 +67,7 @@ func main() {
 			session.Set("title", title)
 			session.Set("url", url)
 			session.Set("memo", memo)
+			session.Set("andor", andor)
 			session.Save()
 
 			ctx.HTML(200, "search.html", gin.H{
@@ -70,6 +75,7 @@ func main() {
 				"title":    title,
 				"url":      url,
 				"memo":     memo,
+				"andor":    andor,
 			})
 		})
 
@@ -80,6 +86,7 @@ func main() {
 			title := ""
 			url := ""
 			memo := ""
+			andor := ""
 
 			// Interface型で返されるので、stringで型変換してあげる
 			if session.Get("title") != nil {
@@ -91,20 +98,24 @@ func main() {
 			if session.Get("memo") != nil {
 				memo = session.Get("memo").(string)
 			}
+			if session.Get("andor") != nil {
+				memo = session.Get("andor").(string)
+			}
 
 			// 再検索して表示する
-			products := database.Search(title, url, memo)
+			products := database.Search(title, url, memo, andor)
 
 			ctx.HTML(200, "search.html", gin.H{
 				"products": products,
 				"title":    title,
 				"url":      url,
 				"memo":     memo,
+				"andor":    andor,
 			})
 		})
 
 		// Create
-		authUserGroup.POST("/new", func(ctx *gin.Context) {
+		authUserGroup.POST("/regist", func(ctx *gin.Context) {
 			title := ctx.PostForm("title")
 			url := ctx.PostForm("url")
 			memo := ctx.PostForm("memo")
@@ -237,10 +248,6 @@ func login(id string, password string, ctx *gin.Context) error {
 		}
 
 		fmt.Println(*resp)
-		// 以下はエラーになったので、一旦コメントアウト
-		// fmt.Printf("Access Token: %s\n", *resp.AuthenticationResult.AccessToken)
-		// fmt.Printf("ID Token: %s\n", *resp.AuthenticationResult.IdToken)
-		// fmt.Printf("Refresh Token: %s\n", *resp.AuthenticationResult.RefreshToken)
 	}
 
 	return nil
