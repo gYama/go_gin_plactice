@@ -51,6 +51,58 @@ func main() {
 			})
 		})
 
+		authUserGroup.POST("/search", func(ctx *gin.Context) {
+			title := ctx.PostForm("title")
+			url := ctx.PostForm("url")
+			memo := ctx.PostForm("memo")
+			products := database.Search(title, url, memo)
+
+			// 検索条件をセッションに保存
+			// ちょっとベタだけど、とりあえず版
+			session := sessions.Default(ctx)
+			session.Set("title", title)
+			session.Set("url", url)
+			session.Set("memo", memo)
+			session.Save()
+
+			ctx.HTML(200, "search.html", gin.H{
+				"products": products,
+				"title":    title,
+				"url":      url,
+				"memo":     memo,
+			})
+		})
+
+		authUserGroup.GET("/search", func(ctx *gin.Context) {
+			// セッションから検索条件を取り出し
+			session := sessions.Default(ctx)
+
+			title := ""
+			url := ""
+			memo := ""
+
+			// Interface型で返されるので、stringで型変換してあげる
+			if session.Get("title") != nil {
+				title = session.Get("title").(string)
+			}
+			if session.Get("url") != nil {
+				url = session.Get("url").(string)
+			}
+			if session.Get("memo") != nil {
+				memo = session.Get("memo").(string)
+			}
+
+			// 再検索して表示する
+			products := database.Search(title, url, memo)
+
+			ctx.HTML(200, "search.html", gin.H{
+				"products": products,
+				"title":    title,
+				"url":      url,
+				"memo":     memo,
+			})
+		})
+
 		// Create
 		authUserGroup.POST("/new", func(ctx *gin.Context) {
 			title := ctx.PostForm("title")
@@ -144,13 +196,19 @@ func login(id string, password string, ctx *gin.Context) error {
 
 	// cognitosrpはあまりメンテナンスされてなさそう
 	// いずれ自分で実装するが、一旦このまま利用する
-	csrp, _ := cognitosrp.NewCognitoSRP(
+	csrp, err := cognitosrp.NewCognitoSRP(
 		id,
 		password,
 		os.Getenv("COGNITO_USERPOOL_ID"),
 		os.Getenv("COGNITO_APP_CLIENT_ID"),
 		aws.String(os.Getenv("COGNITO_APP_CLIENT_SECRET")),
 	)
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println(csrp)
 
 	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion(os.Getenv("AWS_REGION")))
 	svc := cip.NewFromConfig(cfg)
@@ -203,8 +261,8 @@ func sessionCheckMiddleware() gin.HandlerFunc {
 		isAuthenticated := session.Get("isAuthenticated")
 
 		if isAuthenticated == nil {
-			ctx.Abort()
 			ctx.Redirect(http.StatusMovedPermanently, "/login")
+			ctx.Abort()
 		} else {
 			ctx.Set("isAuthenticated", isAuthenticated)
 			ctx.Next()

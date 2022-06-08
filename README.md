@@ -65,9 +65,9 @@ go get github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider
 go get github.com/aws/aws-sdk-go/aws
 go get github.com/alexrudd/cognito-srp/v4
 go get github.com/gin-gonic/gin
-go get github.com/jinzhu/gorm
-go get github.com/mattn/go-sqlite3
 go get github.com/gin-contrib/sessions
+go get gorm.io/gorm
+go get gorm.io/driver/sqlite
 ```
 
 #### 環境変数の設定（ローカル）

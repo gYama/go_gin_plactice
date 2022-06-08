@@ -1,0 +1,18 @@
+{{template "header" .}}
+<h2>商品検索</h2>
+<form method="post" action="/search">
+    <p>タイトル<input type="text" name="title" size="30" value="{{.title}}" ></p>
+    <p>URL<input type="text" name="url" size="30" value="{{.url}}" ></p>
+    <p>備考<input type="text" name="memo" size="30" value="{{.memo}}" ></p>
+    <p><input type="submit" value="検索"></p>
+</form>
+
+<ul>
+    {{ range .products }}
+        <li>タイトル：{{ .Title }}, URL：{{ .Url }}, 備考：{{ .Memo }}
+            <label><a href="/detail/{{.ID}}">編集</a></label>
+            <label><a href="/delete_check/{{.ID}}">削除</a></label>
+        </li>
+    {{end}}
+</ul>
+{{template "footer"}}
