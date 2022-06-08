@@ -254,11 +254,8 @@ func logout(ctx *gin.Context) {
 // 認証チェック　エラーの場合は、ログイン画面を表示する
 func sessionCheckMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		fmt.Println("sessionCheckMiddleware")
 		session := sessions.Default(ctx)
-		fmt.Println(session)
 		isAuthenticated := session.Get("isAuthenticated")
-		fmt.Println(isAuthenticated)
 
 		if isAuthenticated == nil {
 			ctx.Redirect(http.StatusMovedPermanently, "/login")
