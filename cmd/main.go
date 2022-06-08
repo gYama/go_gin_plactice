@@ -63,9 +63,13 @@ func main() {
 			session.Set("title", title)
 			session.Set("url", url)
 			session.Set("memo", memo)
+			session.Save()
 
 			ctx.HTML(200, "search.html", gin.H{
 				"products": products,
+				"title":    title,
+				"url":      url,
+				"memo":     memo,
 			})
 		})
 

@@ -1,9 +1,9 @@
 {{template "header" .}}
 <h2>商品検索</h2>
 <form method="post" action="/search">
-    <p>タイトル<input type="text" name="title" size="30" placeholder="入力してください" ></p>
-    <p>URL<input type="text" name="url" size="30" placeholder="入力してください" ></p>
-    <p>備考<input type="text" name="memo" size="30" placeholder="入力してください" ></p>
+    <p>タイトル<input type="text" name="title" size="30" value="{{.title}}" ></p>
+    <p>URL<input type="text" name="url" size="30" value="{{.url}}" ></p>
+    <p>備考<input type="text" name="memo" size="30" value="{{.memo}}" ></p>
     <p><input type="submit" value="検索"></p>
 </form>
 
