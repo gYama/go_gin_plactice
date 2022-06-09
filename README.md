@@ -1,7 +1,7 @@
 
 # Golang / Gin / Docker / Docker-Compose の学習用
 ## はじめに
-Golang,Gin,Dockerを使って、簡単なWebサービスを作ります。
+Golang,Gin,Dockerを使って、簡単なWebサービス（管理画面）を作ります。
 
 動かしながら学習することを目的としてます。
 
