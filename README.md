@@ -120,4 +120,5 @@ docker-compose build & docker-compose up
 
 ## 備考
 セッション管理方法は複数あるので、どれを採用するかは以下を参照。
+
 https://github.com/gin-contrib/sessions
