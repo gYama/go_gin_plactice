@@ -137,9 +137,9 @@ func Search(title string, url string, memo string, andor string) []ProductData {
 			continue
 		}
 		if i == 0 {
-			urlQuery = urlQuery.Where("title like ?", "%"+str+"%")
+			urlQuery = urlQuery.Where("url like ?", "%"+str+"%")
 		} else {
-			urlQuery = urlQuery.Or("title like ?", "%"+str+"%")
+			urlQuery = urlQuery.Or("url like ?", "%"+str+"%")
 		}
 	}
 
@@ -153,9 +153,9 @@ func Search(title string, url string, memo string, andor string) []ProductData {
 			continue
 		}
 		if i == 0 {
-			memoQuery = memoQuery.Where("title like ?", "%"+str+"%")
+			memoQuery = memoQuery.Where("memo like ?", "%"+str+"%")
 		} else {
-			memoQuery = memoQuery.Or("title like ?", "%"+str+"%")
+			memoQuery = memoQuery.Or("memo like ?", "%"+str+"%")
 		}
 	}
 
