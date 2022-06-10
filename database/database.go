@@ -111,9 +111,10 @@ func Search(title string, url string, memo string, andor string) []ProductData {
 	// 複数入力された場合は、スペース（半角/全角）区切りで分割
 	reg := "[ 　]"
 
-	// titleの検索クエリー
+	// titleをスペースで分割
 	titles := regexp.MustCompile(reg).Split(title, -1)
 
+	// titleの検索クエリー生成
 	for i := 0; i < len(titles); i++ {
 		str := strings.TrimSpace(titles[i])
 		if len(str) == 0 {
@@ -126,33 +127,35 @@ func Search(title string, url string, memo string, andor string) []ProductData {
 		}
 	}
 
-	// urlの検索クエリー
+	// urlをスペースで分割
 	urls := regexp.MustCompile(reg).Split(url, -1)
 
+	// urlの検索クエリー生成
 	for i := 0; i < len(urls); i++ {
 		str := strings.TrimSpace(urls[i])
 		if len(str) == 0 {
 			continue
 		}
 		if i == 0 {
-			urlQuery = urlQuery.Where("title like ?", "%"+str+"%")
+			urlQuery = urlQuery.Where("url like ?", "%"+str+"%")
 		} else {
-			urlQuery = urlQuery.Or("title like ?", "%"+str+"%")
+			urlQuery = urlQuery.Or("url like ?", "%"+str+"%")
 		}
 	}
 
-	// memoの検索クエリー
+	// memoをスペースで分割
 	memos := regexp.MustCompile(reg).Split(memo, -1)
 
+	// memoの検索クエリー生成
 	for i := 0; i < len(memos); i++ {
 		str := strings.TrimSpace(memos[i])
 		if len(str) == 0 {
 			continue
 		}
 		if i == 0 {
-			memoQuery = memoQuery.Where("title like ?", "%"+str+"%")
+			memoQuery = memoQuery.Where("memo like ?", "%"+str+"%")
 		} else {
-			memoQuery = memoQuery.Or("title like ?", "%"+str+"%")
+			memoQuery = memoQuery.Or("memo like ?", "%"+str+"%")
 		}
 	}
 
@@ -160,7 +163,7 @@ func Search(title string, url string, memo string, andor string) []ProductData {
 
 	// 項目間のAND/OR
 	if andor == "or" {
-		// クエリーを出力する場合は、db.Debug()を使う
+		// クエリーを出力する場合は、db.Debug().Where()とかやる
 		db.Where(
 			titleQuery,
 		).Or(
