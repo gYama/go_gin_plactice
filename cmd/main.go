@@ -6,7 +6,6 @@ import (
 	"go_gin_practice/database"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -25,63 +24,72 @@ func main() {
 	router := gin.Default()
 
 	store := cookie.NewStore([]byte("secret"))
-	// store, _ := redis.NewStore(10, "tcp", "localhost:6379", "", []byte("secret"))
+	// store, _ := redis.NewStore(10, "tcp", "0.0.0.0:6379", "", []byte("secret"))
 
 	router.Use(sessions.Sessions("mysession", store))
 
-	router.LoadHTMLGlob("templates/*.html")
+	router.LoadHTMLGlob("templates/**/*")
 
 	database.Init()
 
-	// 認証済みユーザー用のグループを作成
-	authUserGroup := router.Group("/")
+	// 認証が必要なアクショングループを作成
+	authGroup := router.Group("/")
 
 	// ここの処理は、全て認証チェックが行われる
 	// 認証チェックでエラーの場合は、ログイン画面が表示される
-	authUserGroup.Use(sessionCheckMiddleware())
+	authGroup.Use(sessionCheckMiddleware())
 	{
-		authUserGroup.GET("/", func(ctx *gin.Context) {
-			count := database.GetRecordCount()
+		authGroup.GET("/", func(ctx *gin.Context) {
+			count := database.ProductGetRecordCount()
 			ctx.HTML(200, "dashboard.html", gin.H{
 				"count": count,
 			})
 		})
 
-		authUserGroup.GET("/regist", func(ctx *gin.Context) {
-			products := database.GetAll()
-			ctx.HTML(200, "regist.html", gin.H{
+	}
+
+	// 認証が必要なアクショングループを作成（Productでまとめる）
+	authProductGroup := router.Group("/")
+
+	// ここの処理は、全て認証チェックが行われる
+	// 認証チェックでエラーの場合は、ログイン画面が表示される
+	authProductGroup.Use(sessionCheckMiddleware())
+	{
+		authProductGroup.GET("/product/regist", func(ctx *gin.Context) {
+			products := database.ProductGetAll()
+			ctx.HTML(200, "product_regist.html", gin.H{
 				"products": products,
 			})
 		})
 
-		authUserGroup.POST("/search", func(ctx *gin.Context) {
-			title := ctx.PostForm("title")
-			url := ctx.PostForm("url")
-			memo := ctx.PostForm("memo")
-			andor := ctx.PostForm("andor")
-			products := database.Search(title, url, memo, andor)
+		authProductGroup.POST("/product/search", func(ctx *gin.Context) {
+			products := database.ProductSearch(ctx)
 
 			// 検索条件をセッションに保存
 			// ちょっとベタだけど、とりあえず版
 			session := sessions.Default(ctx)
-			session.Set("title", title)
-			session.Set("url", url)
-			session.Set("memo", memo)
-			session.Set("andor", andor)
+			session.Set("product.title", ctx.PostForm("title"))
+			session.Set("product.url", ctx.PostForm("url"))
+			session.Set("product.memo", ctx.PostForm("memo"))
+			session.Set("product.andor", ctx.PostForm("andor"))
 			session.Save()
 
-			ctx.HTML(200, "search.html", gin.H{
+			ctx.HTML(200, "product_search.html", gin.H{
 				"products": products,
-				"title":    title,
-				"url":      url,
-				"memo":     memo,
-				"andor":    andor,
+				"title":    ctx.PostForm("title"),
+				"url":      ctx.PostForm("url"),
+				"memo":     ctx.PostForm("memo"),
+				"andor":    ctx.PostForm("andor"),
+				"count":    len(products),
 			})
 		})
 
-		authUserGroup.GET("/search", func(ctx *gin.Context) {
+		authProductGroup.GET("/product/search", func(ctx *gin.Context) {
 			// セッションから検索条件を取り出し
 			session := sessions.Default(ctx)
+
+			// 再検索して表示する
+			products := database.ProductSearch(ctx)
 
 			title := ""
 			url := ""
@@ -102,72 +110,175 @@ func main() {
 				andor = session.Get("andor").(string)
 			}
 
-			// 再検索して表示する
-			products := database.Search(title, url, memo, andor)
-
-			ctx.HTML(200, "search.html", gin.H{
+			ctx.HTML(200, "product_search.html", gin.H{
 				"products": products,
 				"title":    title,
 				"url":      url,
 				"memo":     memo,
 				"andor":    andor,
+				"count":    len(products),
 			})
 		})
 
 		// Create
-		authUserGroup.POST("/regist", func(ctx *gin.Context) {
-			title := ctx.PostForm("title")
-			url := ctx.PostForm("url")
-			memo := ctx.PostForm("memo")
-			database.Insert(title, url, memo)
-			ctx.Redirect(302, "/list")
+		authProductGroup.POST("/product/regist", func(ctx *gin.Context) {
+			database.ProductInsert(ctx)
+			ctx.Redirect(302, "/product/regist")
 		})
 
 		// Detail
-		authUserGroup.GET("/detail/:id", func(ctx *gin.Context) {
-			n := ctx.Param("id")
-			id, err := strconv.Atoi(n)
-			if err != nil {
-				panic(err)
-			}
-			product := database.GetOne(id)
-			ctx.HTML(200, "detail.html", gin.H{"product": product})
+		authProductGroup.GET("/product/detail/:id", func(ctx *gin.Context) {
+			product := database.ProductGetOne(ctx)
+			ctx.HTML(200, "product_detail.html", gin.H{"product": product})
 		})
 
 		// Update
-		authUserGroup.POST("/update/:id", func(ctx *gin.Context) {
-			n := ctx.Param("id")
-			id, err := strconv.Atoi(n)
-			if err != nil {
-				panic("ERROR")
-			}
-			title := ctx.PostForm("title")
-			url := ctx.PostForm("url")
-			memo := ctx.PostForm("memo")
-			database.Update(id, title, url, memo)
-			ctx.Redirect(302, "/list")
+		authProductGroup.POST("/product/update/:id", func(ctx *gin.Context) {
+			database.ProductUpdate(ctx)
+			ctx.Redirect(302, "/product/regist")
 		})
 
 		// 削除確認
-		authUserGroup.GET("/delete_check/:id", func(ctx *gin.Context) {
-			n := ctx.Param("id")
-			id, err := strconv.Atoi(n)
-			if err != nil {
-				panic("ERROR")
-			}
-			product := database.GetOne(id)
-			ctx.HTML(200, "delete.html", gin.H{"product": product})
+		authProductGroup.GET("/product/delete_check/:id", func(ctx *gin.Context) {
+			product := database.ProductGetOne(ctx)
+			ctx.HTML(200, "product_delete.html", gin.H{"product": product})
 		})
 
 		// Delete
-		authUserGroup.POST("/delete/:id", func(ctx *gin.Context) {
-			n := ctx.Param("id")
-			id, err := strconv.Atoi(n)
-			if err != nil {
-				panic("ERROR")
+		authProductGroup.POST("/product/delete/:id", func(ctx *gin.Context) {
+			database.ProductDelete(ctx)
+			ctx.Redirect(302, "/product/regist")
+		})
+	}
+
+	// 認証が必要なアクショングループを作成（Customerでまとめる）
+	authCustomerGroup := router.Group("/")
+
+	// ここの処理は、全て認証チェックが行われる
+	// 認証チェックでエラーの場合は、ログイン画面が表示される
+	authCustomerGroup.Use(sessionCheckMiddleware())
+	{
+		authCustomerGroup.GET("/customer/regist", func(ctx *gin.Context) {
+			customers := database.CustomerGetAll()
+			ctx.HTML(200, "customer_regist.html", gin.H{
+				"customers": customers,
+			})
+		})
+
+		authCustomerGroup.POST("/customer/search", func(ctx *gin.Context) {
+			customers := database.CustomerSearch(ctx)
+
+			// 検索条件をセッションに保存
+			// ちょっとベタだけど、とりあえず版
+			session := sessions.Default(ctx)
+			session.Set("customer.first_name", ctx.PostForm("first_name"))
+			session.Set("customer.second_name", ctx.PostForm("second_name"))
+			session.Set("customer.phone", ctx.PostForm("phone"))
+			session.Set("customer.mail_address", ctx.PostForm("mail_address"))
+			session.Set("customer.zipcode", ctx.PostForm("zipcode"))
+			session.Set("customer.address", ctx.PostForm("address"))
+			session.Set("customer.memo", ctx.PostForm("memo"))
+			session.Set("customer.andor", ctx.PostForm("andor"))
+			session.Save()
+
+			ctx.HTML(200, "customer_search.html", gin.H{
+				"customers":    customers,
+				"first_name":   ctx.PostForm("first_name"),
+				"second_name":  ctx.PostForm("second_name"),
+				"phone":        ctx.PostForm("phone"),
+				"mail_address": ctx.PostForm("mail_address"),
+				"zipcode":      ctx.PostForm("zipcode"),
+				"address":      ctx.PostForm("address"),
+				"memo":         ctx.PostForm("memo"),
+				"andor":        ctx.PostForm("andor"),
+				"count":        len(customers),
+			})
+		})
+
+		authCustomerGroup.GET("/customer/search", func(ctx *gin.Context) {
+			// セッションから検索条件を取り出し
+			session := sessions.Default(ctx)
+
+			// 再検索して表示する
+			customers := database.CustomerSearch(ctx)
+
+			first_name := ""
+			second_name := ""
+			phone := ""
+			mail_address := ""
+			zipcode := ""
+			address := ""
+			memo := ""
+			andor := ""
+
+			// Interface型で返されるので、stringで型変換してあげる
+			if session.Get("first_name") != nil {
+				first_name = session.Get("first_name").(string)
 			}
-			database.Delete(id)
-			ctx.Redirect(302, "/list")
+			if session.Get("second_name") != nil {
+				second_name = session.Get("second_name").(string)
+			}
+			if session.Get("phone") != nil {
+				phone = session.Get("phone").(string)
+			}
+			if session.Get("mail_address") != nil {
+				mail_address = session.Get("mail_address").(string)
+			}
+			if session.Get("zipcode") != nil {
+				zipcode = session.Get("zipcode").(string)
+			}
+			if session.Get("address") != nil {
+				address = session.Get("address").(string)
+			}
+			if session.Get("memo") != nil {
+				memo = session.Get("memo").(string)
+			}
+			if session.Get("andor") != nil {
+				andor = session.Get("andor").(string)
+			}
+
+			ctx.HTML(200, "customer_search.html", gin.H{
+				"customers":    customers,
+				"first_name":   first_name,
+				"second_name":  second_name,
+				"phone":        phone,
+				"mail_address": mail_address,
+				"zipcode":      zipcode,
+				"address":      address,
+				"memo":         memo,
+				"andor":        andor,
+				"count":        len(customers),
+			})
+		})
+
+		// Create
+		authCustomerGroup.POST("/customer/regist", func(ctx *gin.Context) {
+			database.CustomerInsert(ctx)
+			ctx.Redirect(302, "/customer/regist")
+		})
+
+		// Detail
+		authCustomerGroup.GET("/customer/detail/:id", func(ctx *gin.Context) {
+			customer := database.CustomerGetOne(ctx)
+			ctx.HTML(200, "customer_detail.html", gin.H{"customer": customer})
+		})
+
+		// Update
+		authCustomerGroup.POST("/customer/update/:id", func(ctx *gin.Context) {
+			database.CustomerUpdate(ctx)
+			ctx.Redirect(302, "/customer/regist")
+		})
+
+		// 削除確認
+		authCustomerGroup.GET("/customer/delete_check/:id", func(ctx *gin.Context) {
+			customer := database.CustomerGetOne(ctx)
+			ctx.HTML(200, "customer_delete.html", gin.H{"customer": customer})
+		})
+
+		// Delete
+		authCustomerGroup.POST("/customer/delete/:id", func(ctx *gin.Context) {
+			database.CustomerDelete(ctx)
+			ctx.Redirect(302, "/customer/regist")
 		})
 	}
 
@@ -219,7 +330,7 @@ func login(id string, password string, ctx *gin.Context) error {
 		fmt.Println(err)
 		return err
 	}
-	fmt.Println(csrp)
+	// fmt.Println(csrp)
 
 	cfg, _ := config.LoadDefaultConfig(context.TODO(), config.WithRegion(os.Getenv("AWS_REGION")))
 	svc := cip.NewFromConfig(cfg)

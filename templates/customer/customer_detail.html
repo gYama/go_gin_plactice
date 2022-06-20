@@ -1,0 +1,14 @@
+{{template "header" .}}
+<h2>詳細/編集</h2>
+
+<form method="post" action="/customer/update/{{.customer.ID}}">
+    <p>姓<input type="text" name="first_name" size="30"></p>
+    <p>名<input type="text" name="second_name" size="30"></p>
+    <p>電話番号<input type="text" name="phone" size="30"></p>
+    <p>メールアドレス<input type="text" name="mail_address" size="30"></p>
+    <p>郵便番号<input type="text" name="zipcode" size="30"></p>
+    <p>住所<input type="text" name="address" size="30"></p>
+    <p>備考<input type="text" name="memo" size="30"></p>
+    <p><input type="submit" value="Send"></p>
+</form>
+{{template "footer"}}
