@@ -98,7 +98,7 @@ func CustomerGetAll() []CustomerData {
 	}
 
 	var customer []CustomerData
-	db.Debug().Order("created_at desc").Find(&customer)
+	db.Order("created_at desc").Find(&customer)
 	return customer
 }
 
