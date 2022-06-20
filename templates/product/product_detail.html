@@ -1,7 +1,7 @@
 {{template "header" .}}
 <h2>詳細/編集</h2>
 
-<form method="post" action="/update/{{.product.ID}}">
+<form method="post" action="/product/update/{{.product.ID}}">
     <p>タイトル<input type="text" name="title" size="30" value="{{.product.Title}}" ></p>
     <p>URL<input type="text" name="url" size="30" value="{{.product.Url}}" ></p>
     <p>備考<input type="text" name="memo" size="30" value="{{.product.Memo}}" ></p>

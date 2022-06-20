@@ -1,0 +1,19 @@
+{{template "header" .}}
+<h1>削除確認</h1>
+<p>削除してもよろしいですか？</p>
+<ul>
+    <li>姓： {{.customer.FirstName}}</li>
+    <li>名： {{.customer.SecondName}}</li>
+    <li>電話番号： {{.customer.Phone}}</li>
+    <li>メールアドレス： {{.customer.MailAddress}}</li>
+    <li>郵便番号： {{.customer.Zipcode}}</li>
+    <li>住所： {{.customer.Address}}</li>
+    <li>備考： {{.customer.Memo}}</li>
+    <li>登録日時： {{.customer.CreatedAt}}</li>
+</ul>
+
+<form method="post" action="/customer/delete/{{.customer.ID}}">
+    <p><input type="submit" value="削除"></p>
+    <p><a href="/customer/search">戻る</a></p>
+</form>
+{{template "footer"}}

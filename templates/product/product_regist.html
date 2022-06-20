@@ -1,6 +1,6 @@
 {{template "header" .}}
 <h2>商品情報の登録</h2>
-<form method="post" action="/regist">
+<form method="post" action="/product/regist">
     <p>タイトル<input type="text" name="title" size="30" placeholder="入力してください" ></p>
     <p>URL<input type="text" name="url" size="30" placeholder="入力してください" ></p>
     <p>備考<input type="text" name="memo" size="30" placeholder="入力してください" ></p>
@@ -8,11 +8,9 @@
 </form>
 
 <ul>
+    <li>タイトル, URL, 備考</li>
     {{ range .products }}
-        <li>タイトル：{{ .Title }}, URL：{{ .Url }}, 備考：{{ .Memo }}
-            <label><a href="/detail/{{.ID}}">編集</a></label>
-            <label><a href="/delete_check/{{.ID}}">削除</a></label>
-        </li>
+        <li>{{ .Title }}, {{ .Url }}, {{ .Memo }}</li>
     {{end}}
 </ul>
 {{template "footer"}}

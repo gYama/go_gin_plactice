@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
+	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -17,7 +17,7 @@ type ProductData struct {
 }
 
 // 初期化
-func Init() {
+func ProductInit() {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error（Init）")
@@ -26,53 +26,71 @@ func Init() {
 }
 
 // 追加
-func Insert(title string, url string, memo string) {
+func ProductInsert(ctx *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error（Insert)")
 	}
+	title := ctx.PostForm("title")
+	url := ctx.PostForm("url")
+	memo := ctx.PostForm("memo")
 	db.Create(&ProductData{Title: title, Url: url, Memo: memo})
 }
 
 // 更新
-func Update(id int, title string, url string, memo string) {
+func ProductUpdate(ctx *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error（Update)")
 	}
+
+	n := ctx.Param("id")
+	id, err := strconv.Atoi(n)
+	if err != nil {
+		panic("ERROR")
+	}
+
 	var product ProductData
 	db.First(&product, id)
-	product.Title = title
-	product.Url = url
-	product.Memo = memo
+
+	product.Title = ctx.PostForm("title")
+	product.Url = ctx.PostForm("url")
+	product.Memo = ctx.PostForm("memo")
 	db.Save(&product)
 }
 
 // 削除
-func Delete(id int) {
+func ProductDelete(ctx *gin.Context) {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error（Delete)")
 	}
+
+	n := ctx.Param("id")
+	id, err := strconv.Atoi(n)
+	if err != nil {
+		panic("ERROR")
+	}
+
 	var product ProductData
 	db.First(&product, id)
 	db.Delete(&product)
 }
 
 // 全件取得
-func GetAll() []ProductData {
+func ProductGetAll() []ProductData {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error(GetAll())")
 	}
 
 	var product []ProductData
-	db.Debug().Order("created_at desc").Find(&product)
+	db.Order("created_at desc").Find(&product)
 	return product
 }
 
 // レコード数取得
-func GetRecordCount() int64 {
+func ProductGetRecordCount() int64 {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error(GetRecordCount())")
@@ -87,77 +105,38 @@ func GetRecordCount() int64 {
 }
 
 // 1件取得
-func GetOne(id int) ProductData {
+func ProductGetOne(ctx *gin.Context) ProductData {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error(GetOne())")
 	}
+
+	n := ctx.Param("id")
+	id, err := strconv.Atoi(n)
+	if err != nil {
+		panic("ERROR")
+	}
+
 	var product ProductData
 	db.First(&product, id)
 	return product
 }
 
-func Search(title string, url string, memo string, andor string) []ProductData {
+func ProductSearch(ctx *gin.Context) []ProductData {
 	db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 	if err != nil {
 		panic("db open error(GetAll())")
 	}
 
+	title := ctx.PostForm("andor")
+	url := ctx.PostForm("andor")
+	memo := ctx.PostForm("andor")
+	andor := ctx.PostForm("andor")
+
 	// 各クエリーの生成用
-	titleQuery := db
-	urlQuery := db
-	memoQuery := db
-
-	// 複数入力された場合は、スペース（半角/全角）区切りで分割
-	reg := "[ 　]"
-
-	// titleをスペースで分割
-	titles := regexp.MustCompile(reg).Split(title, -1)
-
-	// titleの検索クエリー生成
-	for i := 0; i < len(titles); i++ {
-		str := strings.TrimSpace(titles[i])
-		if len(str) == 0 {
-			continue
-		}
-		if i == 0 {
-			titleQuery = titleQuery.Where("title like ?", "%"+str+"%")
-		} else {
-			titleQuery = titleQuery.Or("title like ?", "%"+str+"%")
-		}
-	}
-
-	// urlをスペースで分割
-	urls := regexp.MustCompile(reg).Split(url, -1)
-
-	// urlの検索クエリー生成
-	for i := 0; i < len(urls); i++ {
-		str := strings.TrimSpace(urls[i])
-		if len(str) == 0 {
-			continue
-		}
-		if i == 0 {
-			urlQuery = urlQuery.Where("url like ?", "%"+str+"%")
-		} else {
-			urlQuery = urlQuery.Or("url like ?", "%"+str+"%")
-		}
-	}
-
-	// memoをスペースで分割
-	memos := regexp.MustCompile(reg).Split(memo, -1)
-
-	// memoの検索クエリー生成
-	for i := 0; i < len(memos); i++ {
-		str := strings.TrimSpace(memos[i])
-		if len(str) == 0 {
-			continue
-		}
-		if i == 0 {
-			memoQuery = memoQuery.Where("memo like ?", "%"+str+"%")
-		} else {
-			memoQuery = memoQuery.Or("memo like ?", "%"+str+"%")
-		}
-	}
+	titleQuery := MakeQuery("title", title, db)
+	urlQuery := MakeQuery("url", url, db)
+	memoQuery := MakeQuery("memo", memo, db)
 
 	var products []ProductData
 

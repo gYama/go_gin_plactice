@@ -1,0 +1,20 @@
+{{template "header" .}}
+<h2>商品情報の登録</h2>
+<form method="post" action="/customer/regist">
+    <p>姓<input type="text" name="first_name" size="30" placeholder="入力してください" ></p>
+    <p>名<input type="text" name="second_name" size="30" placeholder="入力してください" ></p>
+    <p>電話番号<input type="text" name="phone" size="30" placeholder="入力してください" ></p>
+    <p>メールアドレス<input type="text" name="mail_address" size="30" placeholder="入力してください" ></p>
+    <p>郵便番号<input type="text" name="zipcode" size="30" placeholder="入力してください" ></p>
+    <p>住所<input type="text" name="address" size="30" placeholder="入力してください" ></p>
+    <p>備考<input type="text" name="memo" size="30" placeholder="入力してください" ></p>
+    <p><input type="submit" value="登録"></p>
+</form>
+
+<ul>
+    <li>姓, 名, 電話番号, メールアドレス, 電話番号, 郵便番号, 備考</li>
+{{ range .customers }}
+    <li>{{ .FirstName }}, {{ .SecondName }}, {{ .Phone }}, {{ .MailAddress }}, {{ .Zipcode }}, {{ .Address }}, {{ .Memo }}</li>
+{{end}}
+</ul>
+{{template "footer"}}

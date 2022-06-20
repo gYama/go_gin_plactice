@@ -1,4 +1,4 @@
-{{template "header" .}}
+{{template "../header" .}}
 <h1>削除確認</h1>
 <p>削除してもよろしいですか？</p>
 <ul>
@@ -8,8 +8,8 @@
     <li>登録日時： {{.product.CreatedAt}}</li>
 </ul>
 
-<form method="post" action="/delete/{{.product.ID}}">
+<form method="post" action="/product/delete/{{.product.ID}}">
     <p><input type="submit" value="削除"></p>
-    <p><a href="/list">戻る</a></p>
+    <p><a href="/product/search">戻る</a></p>
 </form>
 {{template "footer"}}
